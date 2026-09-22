@@ -54,13 +54,13 @@ Since real-hardware testing happens away from a PC, `MoonBoardBleClient` and `Bo
 
 ## Local toolchain (this machine)
 
-No Android Studio here, so Gradle and the Android SDK were installed standalone rather than via the IDE:
-- Gradle 8.9: `C:\Users\almog-bb\dev-tools\gradle-8.9`
-- Android SDK: `C:\Users\almog-bb\AppData\Local\Android\Sdk` (the default Android Studio location, so a future Android Studio install will just reuse it) — referenced by `local.properties` (gitignored, machine-specific).
+- Gradle 8.9: `C:\Users\almog-bb\dev-tools\gradle-8.9` (also available via the committed `gradlew`/`gradlew.bat`, pinned to the same version so Android Studio's sync doesn't guess a mismatched one).
+- Android SDK: `C:\Users\almog-bb\AppData\Local\Android\Sdk` — referenced by `local.properties` (gitignored, machine-specific).
 
 To rebuild from a fresh shell:
 ```
 export JAVA_HOME="/c/Program Files/Java/jdk-21.0.12.1"
 ./gradlew :androidApp:assembleDebug
 ```
-`gradlew`/`gradlew.bat` are committed, pinned to Gradle 8.9 — Android Studio will use this exact version on sync instead of guessing, which avoids Gradle/AGP version-mismatch errors like `Unable to load class 'org.gradle.api.internal.plugins.DefaultArtifactPublicationSet'`.
+
+**Build output lives outside the project folder**, at `C:\gradle-builds\moonboard_app\<module>` (see `build.gradle.kts`'s `subprojects` block), instead of the usual `<module>/build/`. This machine runs SentinelOne (corporate EDR), whose static scanner holds an indefinite lock on newly-written `.jar`s under `Documents/`, breaking every build. Redirecting output elsewhere sidesteps it entirely. Remove that `subprojects` block if this project ever moves to a machine without that conflict, or once IT adds a scan exclusion for the project folder.

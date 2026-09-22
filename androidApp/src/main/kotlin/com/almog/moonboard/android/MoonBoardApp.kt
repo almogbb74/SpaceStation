@@ -84,7 +84,7 @@ fun MoonBoardApp(viewModel: BoardViewModel) {
             topBar = {
                 Column {
                     TopAppBar(
-                        title = { Text("MoonBoard") },
+                        title = { Text("SpaceStation") },
                         navigationIcon = {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(Icons.Default.Menu, contentDescription = "Menu")

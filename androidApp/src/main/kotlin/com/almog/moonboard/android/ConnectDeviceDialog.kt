@@ -23,7 +23,7 @@ fun ConnectDeviceDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("MoonBoard") },
+        title = { Text("Connect") },
         text = {
             Column {
                 when (connectionState) {
@@ -36,7 +36,7 @@ fun ConnectDeviceDialog(
                             Text("Scanning for nearby MoonBoards...")
                         }
                         if (devices.isEmpty()) {
-                            Text("No MoonBoard found yet")
+                            Text("No MoonBoards found yet")
                         } else {
                             devices.forEach { device ->
                                 Text(

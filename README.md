@@ -36,7 +36,11 @@ Business logic (protocol, mapping, ViewModel) is shared; each platform keeps its
 
 ## Status
 
-- **Android**: builds and passes tests. Verified with `gradle :shared:testDebugUnitTest` and `gradle :androidApp:assembleDebug` — APK output at `androidApp/build/outputs/apk/debug/androidApp-debug.apk`. Not yet run on a device (no phone attached here), so the BLE flow itself (scan/connect/light) is unverified end-to-end.
+- **Android**: builds and passes tests. Verified with `gradlew :shared:testDebugUnitTest` and `gradlew :androidApp:assembleDebug` — APK output at `C:\gradle-builds\moonboard_app\androidApp\outputs\apk\debug\androidApp-debug.apk` (see "Local toolchain" below for why it's not under the project folder). Not yet run on a device (no phone attached here), so the BLE flow itself (scan/connect/light) is unverified end-to-end — that has to happen at the gym against a real board.
+
+### On-device debug log
+
+Since real-hardware testing happens away from a PC, `MoonBoardBleClient` and `BoardViewModel` log every scan/connect/GATT/write event through `AppLogger` (`shared/.../debug/AppLogger.kt`) to a file on the phone (`filesDir/logs/moonboard.log`), flushed per line so a crash doesn't lose anything. Settings screen has "Share log" (sends the file via any share target - email, Drive, etc.) and "Clear log" buttons. Needed a `FileProvider` entry in the manifest + `res/xml/file_paths.xml` since Android blocks raw `file://` URIs in share intents.
 - **iOS**: unverified — this machine has no Xcode/Mac. `iosApp/` only has Swift source, not an Xcode project. On a Mac:
   1. Create a new Xcode iOS App project named `iosApp` (SwiftUI), and replace its generated Swift files with the ones here.
   2. Add a "Run Script" build phase before "Compile Sources" that runs `shared`'s Kotlin/Native framework export, e.g. `cd "$SRCROOT/.." && ./gradlew :shared:embedAndSignAppleFrameworkForXcode`, with the usual `SDK_NAME`/`CONFIGURATION`/`ARCHS` env vars Xcode sets.

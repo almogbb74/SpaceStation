@@ -1,9 +1,12 @@
 .gradle/
 build/
 .idea/
+.vscode/
 local.properties
 *.iml
 .kotlin/
 xcuserdata/
 *.xcworkspace/xcuserdata/
 DerivedData/
+*.hprof
+captures/

@@ -10,8 +10,7 @@ import kotlin.test.assertTrue
 class ProtocolTest {
     @Test
     fun ledIndex_coversFullRangeAcrossColumnFlips() {
-        // 0-indexed (0..197), cross-checked against the community HoldSetup numbering
-        // (holdId 1/12/198 -> LED 0/1/197) and confirmed on real hardware.
+        // 0-indexed (0..197), matching the community HoldSetup numbering (holdId 1/12/198 -> LED 0/1/197).
         assertEquals(0, LedMapper.ledIndex(GridPosition(1, 1)))
         assertEquals(1, LedMapper.ledIndex(GridPosition(1, 2)))
         assertEquals(17, LedMapper.ledIndex(GridPosition(1, 18)))

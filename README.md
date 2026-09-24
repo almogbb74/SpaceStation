@@ -10,8 +10,8 @@ Sources: [willslawrence/moonboard](https://github.com/willslawrence/moonboard), 
   - Service: `6e400001-b5a3-f393-e0a9-e50e24dcca9e`
   - Write (RX): `6e400002-b5a3-f393-e0a9-e50e24dcca9e`
   - Notify (TX): `6e400003-b5a3-f393-e0a9-e50e24dcca9e`
-- Payload is ASCII: `l#S5,P9,P13,E18#` (`S`=start, `P`=middle, `E`=end, numbers are LED index 1-198).
-- LED index = column-major serpentine over an 11x18 grid. **Not confirmed against real hardware** — see the `ponytail:` comment in `LedMapper.kt`; flip `COLUMN_ONE_GOES_UP` if holds light up mirrored.
+- Payload is ASCII: `l#S5,P9,P13,E18#` (`S`=start, `P`=middle, `E`=end, numbers are LED index 0-197).
+- LED index = column-major serpentine over an 11x18 grid. **Confirmed against real hardware** (2026-09) after fixing an off-by-one (the mapper was emitting 1-indexed positions against a 0-indexed protocol, which showed up as holds lighting one row off — direction depended on each column's serpentine travel direction). See `LedMapper.kt`.
 - Writes are chunked to 20 bytes (default BLE MTU) with a 30ms gap between chunks.
 
 **Control box hardware (V1 vs V4/V5/2024):** the protocol above was reverse-engineered against the original MoonBoard v1 control box. MoonBoard's newer boxes (V4/V5, which is what ships with the 2024 hold set) additionally support multiple simultaneous phone connections. There's no public packet capture confirming V4/V5 uses the exact same GATT service — but `FabianRig/ArduinoMoonBoardLED`, a DIY replacement box explicitly tested against "the updated MoonBoard app," uses this same Nordic UART Service, which is strong circumstantial evidence the app-side protocol hasn't changed across box generations (the multi-connection support most likely comes from the box's BLE chip accepting more than one central connection, not a different protocol). **Unconfirmed until tested against real V4/V5 hardware.**

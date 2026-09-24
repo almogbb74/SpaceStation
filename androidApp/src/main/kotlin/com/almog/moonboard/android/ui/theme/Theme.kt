@@ -11,6 +11,7 @@ val MoonBoardSurfaceVariant = Color(0xFF232D3E)
 val MoonBoardAccent = Color(0xFFA192C5)
 val MoonBoardTextPrimary = Color(0xFFE7E9F3)
 val MoonBoardTextMuted = Color(0xFFAEB4C7)
+val MoonBoardSuccess = Color(0xFF6FCF97)
 
 private val MoonBoardColorScheme = darkColorScheme(
     primary = MoonBoardAccent,

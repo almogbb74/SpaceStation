@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.almog.moonboard.ble.ConnectionState
 import com.almog.moonboard.model.BOARD_COLUMNS
@@ -52,9 +53,9 @@ fun GridScreen(viewModel: BoardViewModel) {
         HoldGrid(state.selectedSetup, state.holds, onTap = viewModel::tapHold)
         Spacer(Modifier.height(12.dp))
         Row {
-            Button(onClick = viewModel::clearBoard) { Text("Clear") }
+            Button(onClick = viewModel::clearBoard) { Text(stringResource(R.string.action_clear)) }
             Spacer(Modifier.width(8.dp))
-            Button(onClick = viewModel::sendToBoard) { Text("Light it up") }
+            Button(onClick = viewModel::sendToBoard) { Text(stringResource(R.string.action_light_it_up)) }
         }
     }
 }
@@ -73,7 +74,7 @@ private fun NotConnectedPlaceholder() {
             tint = MaterialTheme.colorScheme.onBackground
         )
         Spacer(Modifier.height(16.dp))
-        Text("Not connected to a MoonBoard", color = MaterialTheme.colorScheme.onBackground)
+        Text(stringResource(R.string.not_connected_placeholder), color = MaterialTheme.colorScheme.onBackground)
     }
 }
 

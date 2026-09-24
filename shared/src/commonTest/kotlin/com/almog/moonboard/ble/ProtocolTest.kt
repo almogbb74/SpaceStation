@@ -10,23 +10,24 @@ import kotlin.test.assertTrue
 class ProtocolTest {
     @Test
     fun ledIndex_coversFullRangeAcrossColumnFlips() {
-        assertEquals(1, LedMapper.ledIndex(GridPosition(1, 1)))
-        assertEquals(18, LedMapper.ledIndex(GridPosition(1, 18)))
-        assertEquals(19, LedMapper.ledIndex(GridPosition(2, 18)))
-        assertEquals(36, LedMapper.ledIndex(GridPosition(2, 1)))
-        assertEquals(198, LedMapper.ledIndex(GridPosition(11, 18)))
+        // 0-indexed (0..197), cross-checked against the community HoldSetup numbering
+        // (holdId 1/12/198 -> LED 0/1/197) and confirmed on real hardware.
+        assertEquals(0, LedMapper.ledIndex(GridPosition(1, 1)))
+        assertEquals(1, LedMapper.ledIndex(GridPosition(1, 2)))
+        assertEquals(17, LedMapper.ledIndex(GridPosition(1, 18)))
+        assertEquals(18, LedMapper.ledIndex(GridPosition(2, 18)))
+        assertEquals(35, LedMapper.ledIndex(GridPosition(2, 1)))
+        assertEquals(197, LedMapper.ledIndex(GridPosition(11, 18)))
     }
 
     @Test
     fun payload_matchesDocumentedExampleFormat() {
-        // column 1 has an identity row->index mapping, so this reproduces the community's
-        // documented example payload exactly: "l#S5,P9,E18#"
         val holds = listOf(
-            PlacedHold(GridPosition(1, 5), HoldType.START),
-            PlacedHold(GridPosition(1, 9), HoldType.MID),
+            PlacedHold(GridPosition(1, 6), HoldType.START),
+            PlacedHold(GridPosition(1, 10), HoldType.MID),
             PlacedHold(GridPosition(1, 18), HoldType.END),
         )
-        assertEquals("l#S5,P9,E18#", PayloadBuilder.build(holds))
+        assertEquals("l#S5,P9,E17#", PayloadBuilder.build(holds))
     }
 
     @Test

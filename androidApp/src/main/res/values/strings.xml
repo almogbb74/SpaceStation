@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SpaceStation</string>
+
+    <!-- Top bar / navigation -->
+    <string name="content_desc_menu">Menu</string>
+    <string name="content_desc_connect">Connect to MoonBoard</string>
+    <string name="nav_grid">Grid</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Connect dialog -->
+    <string name="connect_dialog_title">Connect to MoonBoard</string>
+    <string name="status_connected">Connected to %1$s</string>
+    <string name="status_connecting">Connecting to %1$s…</string>
+    <string name="status_error">Error: %1$s</string>
+    <string name="status_scanning">Scanning for nearby MoonBoards…</string>
+    <string name="no_devices_found">No MoonBoards found yet</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="action_close">Close</string>
+
+    <!-- Grid screen -->
+    <string name="not_connected_placeholder">Not connected to a MoonBoard</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_light_it_up">Light it up</string>
+
+    <!-- Settings screen -->
+    <string name="board_setup_heading">Board setup</string>
+    <string name="debug_log_heading">Debug log</string>
+    <string name="debug_log_description">Scan/connect/write events are saved on-device so they can be shared after testing away from a PC.</string>
+    <string name="action_share_log">Share log</string>
+    <string name="action_clear_log">Clear log</string>
+    <string name="share_log_chooser_title">Share MoonBoard log</string>
+</resources>

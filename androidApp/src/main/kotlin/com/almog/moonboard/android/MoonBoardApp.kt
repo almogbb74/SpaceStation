@@ -26,12 +26,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,13 +44,13 @@ import com.almog.moonboard.ble.ConnectionState
 import com.almog.moonboard.viewmodel.BoardViewModel
 import kotlinx.coroutines.launch
 
-private data class DrawerDestination(val route: String, val label: String, val icon: ImageVector)
+private data class DrawerDestination(val route: String, @StringRes val label: Int, val icon: ImageVector)
 
 // Grid is the start destination. Add one entry here + one `composable(...)` below per future
 // game screen (Snake, Pong, ...) - the drawer and NavHost don't need any other changes.
 private val drawerDestinations = listOf(
-    DrawerDestination("grid", "Grid", Icons.Default.GridOn),
-    DrawerDestination("settings", "Settings", Icons.Default.Settings),
+    DrawerDestination("grid", R.string.nav_grid, Icons.Default.GridOn),
+    DrawerDestination("settings", R.string.nav_settings, Icons.Default.Settings),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +69,7 @@ fun MoonBoardApp(viewModel: BoardViewModel) {
                 Spacer(Modifier.height(12.dp))
                 drawerDestinations.forEach { destination ->
                     NavigationDrawerItem(
-                        label = { Text(destination.label) },
+                        label = { Text(stringResource(destination.label)) },
                         icon = { Icon(destination.icon, contentDescription = null) },
                         selected = currentRoute == destination.route,
                         onClick = {
@@ -84,10 +86,10 @@ fun MoonBoardApp(viewModel: BoardViewModel) {
             topBar = {
                 Column {
                     TopAppBar(
-                        title = { Text("SpaceStation") },
+                        title = { Text(stringResource(R.string.app_name)) },
                         navigationIcon = {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(Icons.Default.Menu, contentDescription = "Menu")
+                                Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.content_desc_menu))
                             }
                         },
                         actions = {
@@ -95,7 +97,7 @@ fun MoonBoardApp(viewModel: BoardViewModel) {
                                 val connected = state.connectionState is ConnectionState.Connected
                                 Icon(
                                     if (connected) Icons.Default.BluetoothConnected else Icons.Default.Bluetooth,
-                                    contentDescription = "Connect to MoonBoard"
+                                    contentDescription = stringResource(R.string.content_desc_connect)
                                 )
                             }
                         },

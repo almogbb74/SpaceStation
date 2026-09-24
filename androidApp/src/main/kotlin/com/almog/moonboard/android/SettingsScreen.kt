@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.almog.moonboard.debug.AppLogger
@@ -32,7 +33,7 @@ fun SettingsScreen(viewModel: BoardViewModel) {
     val context = LocalContext.current
 
     Column(Modifier.fillMaxWidth().padding(16.dp)) {
-        Text("Board setup", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.board_setup_heading), style = MaterialTheme.typography.titleMedium)
         BoardSetup.entries.forEach { setup ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -47,21 +48,22 @@ fun SettingsScreen(viewModel: BoardViewModel) {
         }
 
         Spacer(Modifier.height(24.dp))
-        Text("Debug log", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.debug_log_heading), style = MaterialTheme.typography.titleMedium)
         Text(
-            "Scan/connect/write events are saved on-device so they can be shared after testing away from a PC.",
+            stringResource(R.string.debug_log_description),
             style = MaterialTheme.typography.bodySmall
         )
         Spacer(Modifier.height(8.dp))
+        val shareLogChooserTitle = stringResource(R.string.share_log_chooser_title)
         Row {
-            Button(onClick = { shareLogFile(context) }) { Text("Share log") }
+            Button(onClick = { shareLogFile(context, shareLogChooserTitle) }) { Text(stringResource(R.string.action_share_log)) }
             Spacer(Modifier.width(8.dp))
-            Button(onClick = { AppLogger.currentLogFile()?.writeText("") }) { Text("Clear log") }
+            Button(onClick = { AppLogger.currentLogFile()?.writeText("") }) { Text(stringResource(R.string.action_clear_log)) }
         }
     }
 }
 
-private fun shareLogFile(context: Context) {
+private fun shareLogFile(context: Context, chooserTitle: String) {
     val file = AppLogger.currentLogFile() ?: return
     if (!file.exists()) return
     val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
@@ -70,5 +72,5 @@ private fun shareLogFile(context: Context) {
         putExtra(Intent.EXTRA_STREAM, uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    context.startActivity(Intent.createChooser(intent, "Share MoonBoard log"))
+    context.startActivity(Intent.createChooser(intent, chooserTitle))
 }

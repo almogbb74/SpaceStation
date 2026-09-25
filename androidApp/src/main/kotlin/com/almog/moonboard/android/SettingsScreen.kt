@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName") // Composable functions should start with an uppercase, so I suppressed the warning for now.
+
 package com.almog.moonboard.android
 
 import android.content.Context

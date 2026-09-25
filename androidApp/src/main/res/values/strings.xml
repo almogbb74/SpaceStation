@@ -30,4 +30,16 @@
     <string name="action_share_log">Share log</string>
     <string name="action_clear_log">Clear log</string>
     <string name="share_log_chooser_title">Share MoonBoard log</string>
+
+    <!-- Snake screen -->
+    <string name="nav_snake">Snake</string>
+    <string name="snake_title">Snake</string>
+    <string name="action_start">Start</string>
+    <string name="action_restart">Restart</string>
+    <string name="snake_game_over">Game over</string>
+    <string name="snake_score">Score: %1$d</string>
+    <string name="snake_direction_up">Up</string>
+    <string name="snake_direction_down">Down</string>
+    <string name="snake_direction_left">Left</string>
+    <string name="snake_direction_right">Right</string>
 </resources>

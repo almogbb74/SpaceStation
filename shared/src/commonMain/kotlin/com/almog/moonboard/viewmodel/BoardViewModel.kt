@@ -105,6 +105,5 @@ class BoardViewModel(private val bleClient: MoonBoardBleClient) {
 
     fun onCleared() {
         scope.cancel()
-        bleClient.close()
     }
 }

@@ -10,10 +10,13 @@ import com.almog.moonboard.android.ui.theme.MoonBoardTheme
 import com.almog.moonboard.ble.MoonBoardBleClient
 import com.almog.moonboard.ble.PlatformContext
 import com.almog.moonboard.viewmodel.BoardViewModel
+import com.almog.moonboard.viewmodel.SnakeViewModel
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel by lazy { BoardViewModel(MoonBoardBleClient(PlatformContext(applicationContext))) }
+    private val bleClient by lazy { MoonBoardBleClient(PlatformContext(applicationContext)) }
+    private val boardViewModel by lazy { BoardViewModel(bleClient) }
+    private val snakeViewModel by lazy { SnakeViewModel(bleClient) }
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
@@ -21,7 +24,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestBlePermissions()
-        setContent { MoonBoardTheme { MoonBoardApp(viewModel) } }
+        setContent { MoonBoardTheme { MoonBoardApp(boardViewModel, snakeViewModel) } }
     }
 
     private fun requestBlePermissions() {
@@ -35,6 +38,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.onCleared()
+        boardViewModel.onCleared()
+        snakeViewModel.onCleared()
+        bleClient.close()
     }
 }

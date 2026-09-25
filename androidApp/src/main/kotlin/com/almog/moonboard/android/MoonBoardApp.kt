@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName") // Composable functions should start with an uppercase, so I suppressed the warning for now.
+
 package com.almog.moonboard.android
 
 import androidx.compose.foundation.background
@@ -13,6 +15,7 @@ import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,21 +45,23 @@ import androidx.navigation.compose.rememberNavController
 import com.almog.moonboard.android.ui.theme.MoonBoardAccent
 import com.almog.moonboard.ble.ConnectionState
 import com.almog.moonboard.viewmodel.BoardViewModel
+import com.almog.moonboard.viewmodel.SnakeViewModel
 import kotlinx.coroutines.launch
 
-private data class DrawerDestination(val route: String, @StringRes val label: Int, val icon: ImageVector)
+private data class DrawerDestination(val route: String, @get:StringRes val label: Int, val icon: ImageVector)
 
 // Grid is the start destination. Add one entry here + one `composable(...)` below per future
-// game screen (Snake, Pong, ...) - the drawer and NavHost don't need any other changes.
+// game screen (Pong, ...) - the drawer and NavHost don't need any other changes.
 private val drawerDestinations = listOf(
     DrawerDestination("grid", R.string.nav_grid, Icons.Default.GridOn),
+    DrawerDestination("snake", R.string.nav_snake, Icons.Default.SportsEsports),
     DrawerDestination("settings", R.string.nav_settings, Icons.Default.Settings),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoonBoardApp(viewModel: BoardViewModel) {
-    val state by viewModel.uiState.collectAsState()
+fun MoonBoardApp(boardViewModel: BoardViewModel, snakeViewModel: SnakeViewModel) {
+    val state by boardViewModel.uiState.collectAsState()
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -93,7 +98,7 @@ fun MoonBoardApp(viewModel: BoardViewModel) {
                             }
                         },
                         actions = {
-                            IconButton(onClick = viewModel::openConnectDialog) {
+                            IconButton(onClick = boardViewModel::openConnectDialog) {
                                 val connected = state.connectionState is ConnectionState.Connected
                                 Icon(
                                     if (connected) Icons.Default.BluetoothConnected else Icons.Default.Bluetooth,
@@ -108,8 +113,9 @@ fun MoonBoardApp(viewModel: BoardViewModel) {
             }
         ) { padding ->
             NavHost(navController, startDestination = "grid", modifier = Modifier.padding(padding)) {
-                composable("grid") { GridScreen(viewModel) }
-                composable("settings") { SettingsScreen(viewModel) }
+                composable("grid") { GridScreen(boardViewModel) }
+                composable("snake") { SnakeScreen(snakeViewModel) }
+                composable("settings") { SettingsScreen(boardViewModel) }
             }
         }
     }
@@ -118,9 +124,9 @@ fun MoonBoardApp(viewModel: BoardViewModel) {
         ConnectDeviceDialog(
             connectionState = state.connectionState,
             devices = state.availableDevices,
-            onDeviceSelected = viewModel::connect,
-            onDisconnect = viewModel::disconnect,
-            onDismiss = viewModel::closeConnectDialog,
+            onDeviceSelected = boardViewModel::connect,
+            onDisconnect = boardViewModel::disconnect,
+            onDismiss = boardViewModel::closeConnectDialog,
         )
     }
 }

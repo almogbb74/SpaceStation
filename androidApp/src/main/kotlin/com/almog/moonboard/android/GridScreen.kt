@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName") // Composable functions should start with an uppercase, so I suppressed the warning for now.
+
 package com.almog.moonboard.android
 
 import androidx.compose.foundation.background
@@ -61,7 +63,7 @@ fun GridScreen(viewModel: BoardViewModel) {
 }
 
 @Composable
-private fun NotConnectedPlaceholder() {
+fun NotConnectedPlaceholder() {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         verticalArrangement = Arrangement.Center,

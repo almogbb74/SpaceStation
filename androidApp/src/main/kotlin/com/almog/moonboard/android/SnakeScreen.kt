@@ -7,28 +7,30 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,21 +39,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.almog.moonboard.android.ui.theme.UnboundedExtraBold
 import com.almog.moonboard.ble.ConnectionState
-import com.almog.moonboard.model.BOARD_COLUMNS
-import com.almog.moonboard.model.BOARD_ROWS
-import com.almog.moonboard.model.GridPosition
 import com.almog.moonboard.snake.Direction
 import com.almog.moonboard.viewmodel.GameStatus
 import com.almog.moonboard.viewmodel.SnakeViewModel
-import kotlin.math.sin
 
 @Composable
 fun SnakeScreen(viewModel: SnakeViewModel) {
@@ -69,122 +78,178 @@ fun SnakeScreen(viewModel: SnakeViewModel) {
             SnakeIdleContent(onStart = viewModel::start)
         } else {
             SnakeGameContent(
-                snake = state.snake,
-                food = state.food,
                 score = state.score,
+                highScore = state.highScore,
                 interactive = state.status == GameStatus.RUNNING,
                 onDirection = viewModel::queueDirection,
             )
         }
-        if (state.status == GameStatus.GAME_OVER) {
-            GameOverOverlay(score = state.score, onRestart = viewModel::start)
+        if (state.status == GameStatus.DYING || state.status == GameStatus.GAME_OVER) {
+            GameOverOverlay(score = state.score, highScore = state.highScore, onRestart = viewModel::start)
         }
-    }
-}
-
-@Composable
-private fun SnakeIdleContent(onStart: () -> Unit) {
-    Column(
-        Modifier.fillMaxSize().padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        UndulatingTitle(stringResource(R.string.snake_title))
-        Spacer(Modifier.height(24.dp))
-        Button(onClick = onStart) { Text(stringResource(R.string.action_start)) }
-    }
-}
-
-@Composable
-private fun UndulatingTitle(text: String) {
-    val transition = rememberInfiniteTransition(label = "snake-title")
-    val phase by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2 * Math.PI).toFloat(),
-        animationSpec = infiniteRepeatable(tween(2000, easing = LinearEasing)),
-        label = "phase",
-    )
-    Row {
-        text.forEachIndexed { index, char ->
-            val offsetY = sin(phase + index * 0.6f) * 6f
-            Text(
-                char.toString(),
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.offset(y = offsetY.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun SnakeGameContent(
-    snake: List<GridPosition>,
-    food: GridPosition?,
-    score: Int,
-    interactive: Boolean,
-    onDirection: (Direction) -> Unit,
-) {
-    Column(Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(stringResource(R.string.snake_score, score), style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-        SnakeGrid(snake, food, Modifier.weight(1f))
-        Spacer(Modifier.height(16.dp))
-        DirectionPad(enabled = interactive, onDirection = onDirection)
     }
 }
 
 private val SnakeHeadColor = Color(0xFF2E7D32) // same green as GridScreen's HoldType.START dot
 private val SnakeBodyColor = Color(0xFF1565C0) // same blue as HoldType.MID
-private val SnakeFoodColor = Color(0xFFC62828) // same red as HoldType.END
 
 @Composable
-private fun SnakeGrid(snake: List<GridPosition>, food: GridPosition?, modifier: Modifier = Modifier) {
-    val snakeSet = remember(snake) { snake.toSet() }
-    val head = snake.firstOrNull()
-    LazyVerticalGrid(columns = GridCells.Fixed(BOARD_COLUMNS), modifier = modifier, userScrollEnabled = false) {
-        items(BOARD_COLUMNS * BOARD_ROWS) { index ->
-            val column = index % BOARD_COLUMNS + 1
-            val row = BOARD_ROWS - index / BOARD_COLUMNS
-            val position = GridPosition(column, row)
-            val color = when {
-                position == head -> SnakeHeadColor
-                position == food -> SnakeFoodColor
-                position in snakeSet -> SnakeBodyColor
-                else -> MaterialTheme.colorScheme.surfaceVariant
+private fun SnakeIdleContent(onStart: () -> Unit) {
+    Box(Modifier.fillMaxSize()) {
+        ImmersiveBackground(Modifier.fillMaxSize())
+        Column(
+            Modifier.fillMaxSize().padding(32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                stringResource(R.string.snake_title),
+                style = TextStyle(
+                    fontFamily = UnboundedExtraBold,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 40.sp,
+                    letterSpacing = 0.5.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    shadow = Shadow(color = SnakeHeadColor.copy(alpha = 0.6f), blurRadius = 48f),
+                ),
+            )
+            Spacer(Modifier.height(28.dp))
+            Button(
+                onClick = onStart,
+                shape = RoundedCornerShape(percent = 50),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.background,
+                ),
+                contentPadding = PaddingValues(horizontal = 40.dp, vertical = 14.dp),
+                modifier = Modifier.shadow(
+                    elevation = 16.dp,
+                    shape = RoundedCornerShape(percent = 50),
+                    ambientColor = MaterialTheme.colorScheme.primary,
+                    spotColor = MaterialTheme.colorScheme.primary,
+                ),
+            ) {
+                Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.action_start), fontWeight = FontWeight.SemiBold)
             }
-            Box(Modifier.padding(1.dp).size(16.dp).clip(CircleShape).background(color))
         }
     }
 }
+
+@Composable
+private fun ImmersiveBackground(modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "snake-path-trace")
+    val dashPhase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = -64f,
+        animationSpec = infiniteRepeatable(tween(2400, easing = LinearEasing)),
+        label = "dash-phase",
+    )
+    val dotColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f)
+    Canvas(modifier = modifier) {
+        val spacing = 16.dp.toPx()
+        var y = spacing / 2
+        while (y < size.height) {
+            var x = spacing / 2
+            while (x < size.width) {
+                drawCircle(color = dotColor, radius = 1.3f, center = Offset(x, y))
+                x += spacing
+            }
+            y += spacing
+        }
+
+        val path = Path().apply {
+            moveTo(size.width * 0.12f, size.height * 0.18f)
+            cubicTo(
+                size.width * 0.6f, size.height * 0.18f,
+                size.width * 0.3f, size.height * 0.42f,
+                size.width * 0.75f, size.height * 0.42f,
+            )
+            cubicTo(
+                size.width * 1.05f, size.height * 0.42f,
+                size.width * 0.85f, size.height * 0.68f,
+                size.width * 0.5f, size.height * 0.68f,
+            )
+            cubicTo(
+                size.width * 0.22f, size.height * 0.68f,
+                size.width * 0.3f, size.height * 0.9f,
+                size.width * 0.68f, size.height * 0.95f,
+            )
+        }
+        drawPath(
+            path = path,
+            color = SnakeBodyColor,
+            alpha = 0.8f,
+            style = Stroke(
+                width = 3.dp.toPx(),
+                cap = StrokeCap.Round,
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 18f), dashPhase),
+            ),
+        )
+    }
+}
+
+@Composable
+private fun SnakeGameContent(
+    score: Int,
+    highScore: Int,
+    interactive: Boolean,
+    onDirection: (Direction) -> Unit,
+) {
+    Column(Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            Text(stringResource(R.string.snake_score, score), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.snake_best_score, highScore), style = MaterialTheme.typography.titleMedium)
+        }
+        Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            DirectionPad(enabled = interactive, onDirection = onDirection)
+        }
+    }
+}
+
+private val DirectionButtonSize = 100.dp
+private val DirectionIconSize = 56.dp
 
 @Composable
 private fun DirectionPad(enabled: Boolean, onDirection: (Direction) -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        IconButton(onClick = { onDirection(Direction.UP) }, enabled = enabled) {
-            Icon(Icons.Default.KeyboardArrowUp, contentDescription = stringResource(R.string.snake_direction_up))
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        DirectionButton(Icons.Default.KeyboardArrowUp, stringResource(R.string.snake_direction_up), enabled) {
+            onDirection(Direction.UP)
         }
-        Row {
-            IconButton(onClick = { onDirection(Direction.LEFT) }, enabled = enabled) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.snake_direction_left))
+        Row(horizontalArrangement = Arrangement.spacedBy(96.dp)) {
+            DirectionButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, stringResource(R.string.snake_direction_left), enabled) {
+                onDirection(Direction.LEFT)
             }
-            Spacer(Modifier.width(48.dp))
-            IconButton(onClick = { onDirection(Direction.RIGHT) }, enabled = enabled) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.snake_direction_right))
+            DirectionButton(Icons.AutoMirrored.Filled.KeyboardArrowRight, stringResource(R.string.snake_direction_right), enabled) {
+                onDirection(Direction.RIGHT)
             }
         }
-        IconButton(onClick = { onDirection(Direction.DOWN) }, enabled = enabled) {
-            Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(R.string.snake_direction_down))
+        DirectionButton(Icons.Default.KeyboardArrowDown, stringResource(R.string.snake_direction_down), enabled) {
+            onDirection(Direction.DOWN)
         }
     }
 }
 
 @Composable
-private fun GameOverOverlay(score: Int, onRestart: () -> Unit) {
+private fun DirectionButton(icon: ImageVector, contentDescription: String, enabled: Boolean, onClick: () -> Unit) {
+    IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.size(DirectionButtonSize).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Icon(icon, contentDescription = contentDescription, modifier = Modifier.size(DirectionIconSize))
+    }
+}
+
+@Composable
+private fun GameOverOverlay(score: Int, highScore: Int, onRestart: () -> Unit) {
     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.7f)), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(stringResource(R.string.snake_game_over), style = MaterialTheme.typography.headlineMedium, color = Color.White)
             Spacer(Modifier.height(8.dp))
             Text(stringResource(R.string.snake_score, score), color = Color.White)
+            Text(stringResource(R.string.snake_best_score, highScore), color = Color.White)
             Spacer(Modifier.height(16.dp))
             Button(onClick = onRestart) { Text(stringResource(R.string.action_restart)) }
         }

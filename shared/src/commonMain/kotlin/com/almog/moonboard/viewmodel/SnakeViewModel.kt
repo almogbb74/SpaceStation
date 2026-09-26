@@ -38,6 +38,7 @@ data class SnakeUiState(
     val snake: List<GridPosition> = emptyList(),
     val food: GridPosition? = null,
     val score: Int = 0,
+    val highScore: Int = 0,
 )
 
 class SnakeViewModel(private val bleClient: MoonBoardBleClient) {
@@ -99,7 +100,9 @@ class SnakeViewModel(private val bleClient: MoonBoardBleClient) {
                 is StepResult.Moved -> {
                     val newFood = if (result.ateFood) SnakeEngine.randomFood(result.snake) else food
                     val newScore = state.score + if (result.ateFood) 1 else 0
-                    _uiState.update { it.copy(snake = result.snake, food = newFood, score = newScore) }
+                    _uiState.update {
+                        it.copy(snake = result.snake, food = newFood, score = newScore, highScore = maxOf(it.highScore, newScore))
+                    }
                     bleClient.sendProblem(toHolds(result.snake, newFood))
                 }
             }

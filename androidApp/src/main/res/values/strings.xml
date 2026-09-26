@@ -38,6 +38,7 @@
     <string name="action_restart">Restart</string>
     <string name="snake_game_over">Game over</string>
     <string name="snake_score">Score: %1$d</string>
+    <string name="snake_best_score">Best: %1$d</string>
     <string name="snake_direction_up">Up</string>
     <string name="snake_direction_down">Down</string>
     <string name="snake_direction_left">Left</string>

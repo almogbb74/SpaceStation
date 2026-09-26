@@ -5,10 +5,14 @@ package com.almog.moonboard.android
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.BluetoothConnected
@@ -19,12 +23,14 @@ import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -34,7 +40,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +55,10 @@ import androidx.navigation.compose.rememberNavController
 import com.almog.moonboard.android.ui.theme.IbmPlexMono
 import com.almog.moonboard.android.ui.theme.MoonBoardAccent
 import com.almog.moonboard.android.ui.theme.MoonBoardBackground
+import com.almog.moonboard.android.ui.theme.MoonBoardSuccess
+import com.almog.moonboard.android.ui.theme.MoonBoardSurfaceVariant
 import com.almog.moonboard.android.ui.theme.MoonBoardTextMuted
+import com.almog.moonboard.android.ui.theme.MoonBoardTextPrimary
 import com.almog.moonboard.ble.ConnectionState
 import com.almog.moonboard.viewmodel.BoardViewModel
 import com.almog.moonboard.viewmodel.SnakeViewModel
@@ -76,6 +87,21 @@ fun MoonBoardApp(boardViewModel: BoardViewModel, snakeViewModel: SnakeViewModel)
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(drawerContainerColor = MoonBoardBackground) {
+                Spacer(Modifier.height(20.dp))
+                Column(Modifier.padding(horizontal = 20.dp)) {
+                    Text(
+                        stringResource(R.string.app_name).uppercase(),
+                        fontFamily = IbmPlexMono,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp,
+                        letterSpacing = 1.5.sp,
+                        color = MoonBoardTextMuted,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Box(Modifier.width(28.dp).height(2.dp).background(MoonBoardAccent))
+                }
+                Spacer(Modifier.height(16.dp))
+                HorizontalDivider(color = MoonBoardSurfaceVariant)
                 Spacer(Modifier.height(12.dp))
                 drawerDestinations.forEach { destination ->
                     NavigationDrawerItem(
@@ -86,8 +112,30 @@ fun MoonBoardApp(boardViewModel: BoardViewModel, snakeViewModel: SnakeViewModel)
                             navController.navigate(destination.route) { launchSingleTop = true }
                             scope.launch { drawerState.close() }
                         },
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MoonBoardAccent,
+                            selectedIconColor = MoonBoardTextPrimary,
+                            selectedTextColor = MoonBoardTextPrimary,
+                            unselectedIconColor = MoonBoardTextMuted,
+                            unselectedTextColor = MoonBoardTextMuted,
+                        ),
                         modifier = Modifier.padding(horizontal = 12.dp)
                     )
+                }
+                Spacer(Modifier.weight(1f))
+                HorizontalDivider(color = MoonBoardSurfaceVariant)
+                val (statusDotColor, statusText) = when (val connection = state.connectionState) {
+                    is ConnectionState.Connected -> MoonBoardSuccess to stringResource(R.string.status_connected, connection.deviceName)
+                    is ConnectionState.BluetoothOff -> MaterialTheme.colorScheme.error to stringResource(R.string.status_bluetooth_off)
+                    else -> MoonBoardTextMuted to stringResource(R.string.not_connected_placeholder)
+                }
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(statusDotColor))
+                    Spacer(Modifier.width(10.dp))
+                    Text(statusText, fontFamily = IbmPlexMono, fontSize = 12.sp, color = MoonBoardTextMuted)
                 }
             }
         }

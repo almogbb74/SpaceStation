@@ -22,7 +22,10 @@ import androidx.compose.ui.unit.dp
 // ponytail: hand-picked to match the reference screenshot by eye, not pixel-sampled.
 val MoonBoardBackground = Color(0xFF161D28)
 val MoonBoardSurfaceVariant = Color(0xFF232D3E)
-val MoonBoardAccent = Color(0xFFA192C5)
+
+//val MoonBoardAccent = Color(0xFFA192C5)
+
+val MoonBoardAccent = Color(0xFF7F68B7)
 val MoonBoardTextPrimary = Color(0xFFC6C0A1)
 val MoonBoardTextMuted = Color(0xFFB2B1AB)
 val MoonBoardSuccess = Color(0xFF6FCF97)

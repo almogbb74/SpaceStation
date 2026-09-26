@@ -1,6 +1,7 @@
 package com.almog.moonboard.ble
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -11,6 +12,10 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.ParcelUuid
 import com.almog.moonboard.debug.AppLogger
@@ -29,19 +34,35 @@ private const val TAG = "BLE"
 
 actual class MoonBoardBleClient actual constructor(context: PlatformContext) {
 
-    init {
-        AppLogger.init(context)
-        AppLogger.log(TAG, "MoonBoardBleClient initialized")
-    }
-
     private val androidContext = context.context
     private val bluetoothManager =
         androidContext.getSystemService(android.content.Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val adapter get() = bluetoothManager.adapter
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
+    private val _connectionState = MutableStateFlow<ConnectionState>(
+        if (adapter?.isEnabled == true) ConnectionState.Disconnected else ConnectionState.BluetoothOff
+    )
     actual val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
+
+    // Catches the phone's Bluetooth radio being toggled off/on at any time, not just at the
+    // moment startScan() is called - e.g. the user flips it off from quick settings mid-scan.
+    private val bluetoothStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)) {
+                BluetoothAdapter.STATE_OFF -> _connectionState.value = ConnectionState.BluetoothOff
+                BluetoothAdapter.STATE_ON -> if (_connectionState.value is ConnectionState.BluetoothOff) {
+                    _connectionState.value = ConnectionState.Disconnected
+                }
+            }
+        }
+    }
+
+    init {
+        AppLogger.init(context)
+        AppLogger.log(TAG, "MoonBoardBleClient initialized")
+        androidContext.registerReceiver(bluetoothStateReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
+    }
 
     private val _scanResults = MutableStateFlow<List<BleDevice>>(emptyList())
     actual val scanResults: StateFlow<List<BleDevice>> = _scanResults.asStateFlow()
@@ -71,6 +92,10 @@ actual class MoonBoardBleClient actual constructor(context: PlatformContext) {
     @SuppressLint("MissingPermission")
     actual fun startScan() {
         AppLogger.log(TAG, "startScan() - adapter enabled=${adapter?.isEnabled}")
+        if (adapter?.isEnabled != true) {
+            _connectionState.value = ConnectionState.BluetoothOff
+            return
+        }
         foundDevices.clear()
         _scanResults.value = emptyList()
         _connectionState.value = ConnectionState.Scanning
@@ -176,6 +201,7 @@ actual class MoonBoardBleClient actual constructor(context: PlatformContext) {
     @SuppressLint("MissingPermission")
     actual fun close() {
         AppLogger.log(TAG, "close()")
+        androidContext.unregisterReceiver(bluetoothStateReceiver)
         gatt?.close()
         gatt = null
         scope.cancel()

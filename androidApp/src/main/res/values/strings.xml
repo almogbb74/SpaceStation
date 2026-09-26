@@ -14,7 +14,7 @@
     <string name="status_connecting">Connecting to %1$s…</string>
     <string name="status_error">Error: %1$s</string>
     <string name="status_scanning">Scanning for nearby MoonBoards…</string>
-    <string name="no_devices_found">No MoonBoards found yet</string>
+    <string name="status_bluetooth_off">Bluetooth is turned off</string>
     <string name="action_disconnect">Disconnect</string>
     <string name="action_close">Close</string>
 

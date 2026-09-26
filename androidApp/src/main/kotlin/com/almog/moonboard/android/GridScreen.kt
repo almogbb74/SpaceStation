@@ -2,7 +2,14 @@
 
 package com.almog.moonboard.android
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +26,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.GridOn
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,10 +37,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.almog.moonboard.android.ui.theme.IbmPlexMono
+import com.almog.moonboard.android.ui.theme.MoonBoardAccent
+import com.almog.moonboard.android.ui.theme.MoonBoardTextMuted
 import com.almog.moonboard.ble.ConnectionState
 import com.almog.moonboard.model.BOARD_COLUMNS
 import com.almog.moonboard.model.BOARD_ROWS
@@ -69,14 +83,44 @@ fun NotConnectedPlaceholder() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Icon(
-            Icons.Default.GridOn,
-            contentDescription = null,
-            modifier = Modifier.size(96.dp),
-            tint = MaterialTheme.colorScheme.onBackground
+        RadarPulse()
+        Spacer(Modifier.height(20.dp))
+        Text(
+            stringResource(R.string.not_connected_placeholder).uppercase(),
+            fontFamily = IbmPlexMono,
+            fontSize = 13.sp,
+            letterSpacing = 1.sp,
+            color = MoonBoardTextMuted,
+            textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.height(16.dp))
-        Text(stringResource(R.string.not_connected_placeholder), color = MaterialTheme.colorScheme.onBackground)
+    }
+}
+
+@Composable
+private fun RadarPulse() {
+    val transition = rememberInfiniteTransition(label = "radar")
+    Box(Modifier.size(96.dp), contentAlignment = Alignment.Center) {
+        repeat(3) { index ->
+            val progress by transition.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2400, easing = LinearEasing),
+                    initialStartOffset = StartOffset(index * 800),
+                ),
+                label = "radar-ring-$index",
+            )
+            Box(
+                Modifier
+                    .size(76.dp)
+                    .scale(0.4f + progress * 1.4f)
+                    .alpha((1f - progress) * 0.7f)
+                    .border(1.5.dp, MoonBoardAccent, CircleShape),
+            )
+        }
+        Box(Modifier.size(30.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
+            Icon(Icons.Default.Bluetooth, contentDescription = null, tint = MoonBoardAccent, modifier = Modifier.size(16.dp))
+        }
     }
 }
 

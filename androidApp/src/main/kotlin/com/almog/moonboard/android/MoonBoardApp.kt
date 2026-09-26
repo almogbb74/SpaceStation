@@ -44,8 +44,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.almog.moonboard.android.ui.theme.IbmPlexMonoMedium
+import com.almog.moonboard.android.ui.theme.IbmPlexMono
 import com.almog.moonboard.android.ui.theme.MoonBoardAccent
+import com.almog.moonboard.android.ui.theme.MoonBoardBackground
 import com.almog.moonboard.android.ui.theme.MoonBoardTextMuted
 import com.almog.moonboard.ble.ConnectionState
 import com.almog.moonboard.viewmodel.BoardViewModel
@@ -74,11 +75,11 @@ fun MoonBoardApp(boardViewModel: BoardViewModel, snakeViewModel: SnakeViewModel)
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
+            ModalDrawerSheet(drawerContainerColor = MoonBoardBackground) {
                 Spacer(Modifier.height(12.dp))
                 drawerDestinations.forEach { destination ->
                     NavigationDrawerItem(
-                        label = { Text(stringResource(destination.label)) },
+                        label = { Text(stringResource(destination.label), fontFamily = IbmPlexMono) },
                         icon = { Icon(destination.icon, contentDescription = null) },
                         selected = currentRoute == destination.route,
                         onClick = {
@@ -98,7 +99,7 @@ fun MoonBoardApp(boardViewModel: BoardViewModel, snakeViewModel: SnakeViewModel)
                         title = {
                             Text(
                                 stringResource(R.string.app_name).uppercase(),
-                                fontFamily = IbmPlexMonoMedium,
+                                fontFamily = IbmPlexMono,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 16.sp,
                                 letterSpacing = 1.5.sp,

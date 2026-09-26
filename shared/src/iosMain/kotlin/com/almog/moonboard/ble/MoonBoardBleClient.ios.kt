@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import platform.CoreBluetooth.CBCentralManager
 import platform.CoreBluetooth.CBCentralManagerDelegateProtocol
+import platform.CoreBluetooth.CBCentralManagerStatePoweredOff
+import platform.CoreBluetooth.CBCentralManagerStatePoweredOn
 import platform.CoreBluetooth.CBCharacteristic
 import platform.CoreBluetooth.CBCharacteristicWriteWithoutResponse
 import platform.CoreBluetooth.CBPeripheral
@@ -47,8 +49,12 @@ actual class MoonBoardBleClient actual constructor(context: PlatformContext) {
 
     private val centralDelegate = object : NSObject(), CBCentralManagerDelegateProtocol {
         override fun centralManagerDidUpdateState(central: CBCentralManager) {
-            // Scan/connect calls are only made after the user taps "scan", by which point
-            // the app has been open long enough for the central to be powered on.
+            when (central.state) {
+                CBCentralManagerStatePoweredOff -> _connectionState.value = ConnectionState.BluetoothOff
+                CBCentralManagerStatePoweredOn -> if (_connectionState.value is ConnectionState.BluetoothOff) {
+                    _connectionState.value = ConnectionState.Disconnected
+                }
+            }
         }
 
         override fun centralManager(
@@ -118,6 +124,10 @@ actual class MoonBoardBleClient actual constructor(context: PlatformContext) {
     private val centralManager = CBCentralManager(delegate = centralDelegate, queue = null)
 
     actual fun startScan() {
+        if (centralManager.state != CBCentralManagerStatePoweredOn) {
+            _connectionState.value = ConnectionState.BluetoothOff
+            return
+        }
         foundPeripherals.clear()
         _scanResults.value = emptyList()
         _connectionState.value = ConnectionState.Scanning

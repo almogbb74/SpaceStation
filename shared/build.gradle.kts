@@ -4,6 +4,17 @@ plugins {
 }
 
 kotlin {
+    // expect/actual classes (MoonBoardBleClient, PlatformContext, AppLogger) are how this
+    // module shares BLE/logging code across Android and iOS - the Kotlin compiler still
+    // labels the feature Beta and warns on every use; this is the flag it names to silence that.
+    targets.all {
+        compilations.all {
+            compileTaskProvider.configure {
+                compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
+            }
+        }
+    }
+
     androidTarget {
         compilations.all {
             compileTaskProvider.configure {

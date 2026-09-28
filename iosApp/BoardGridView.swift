@@ -30,9 +30,9 @@ struct BoardGridView: View {
 
     private func color(for type: HoldType?) -> Color {
         switch type {
-        case .start: return Color(red: 0.18, green: 0.49, blue: 0.20)
-        case .mid: return Color(red: 0.08, green: 0.40, blue: 0.75)
-        case .end: return Color(red: 0.78, green: 0.16, blue: 0.16)
+        case .start: return .snakeHead
+        case .mid: return .snakeBody
+        case .end: return .snakeFood
         case .none: return Color(white: 0.88)
         }
     }

@@ -40,6 +40,14 @@ The "Kotlin by JetBrains" VS Code extension resolves symbols (including `R.strin
 
 then restart the extension's language server so it re-imports against the fresh jars: find and kill the `intellij-server.exe` process (it respawns automatically). This is IDE-tooling maintenance only — Android Studio's own sync already does the equivalent internally and never needs this.
 
+## iOS MVVM: Swift ObservableObject wraps the shared ViewModel
+
+`BoardViewModel`/`SnakeViewModel` (shared/commonMain) are the Model+ViewModel layer on iOS too - no parallel Swift reimplementation of game/BLE logic. Each gets a thin `@MainActor` `ObservableObject` (`BoardObservable`, `SnakeObservable`) that seeds `@Published var state` from `.uiState.value` and subscribes via the ViewModel's `observeState { }` callback, dispatched onto the main actor. SwiftUI Views read only the Observable's `@Published` state and call its pass-through methods - never the underlying Kotlin ViewModel directly.
+
+Comparing a Kotlin enum's state across a multi-word entry (e.g. `GameStatus.GAME_OVER`) uses the Kotlin-guaranteed `.name` string property (`status.name == "GAME_OVER"`), not a guessed Swift case name - Kotlin/Native's Swift export naming for multi-word enum entries isn't guaranteed to camelCase them, but `.name` always returns the literal Kotlin identifier.
+
+iOS Kotlin/Native targets cannot be compiled on this project's Windows dev machine (every build disables `iosArm64`/`iosSimulatorArm64`/`iosX64`) and there is no Mac available yet - iOS Swift and `iosMain` Kotlin code is written carefully against documented APIs but stays unverified until built in Xcode on a Mac. Don't treat "I wrote it correctly" as "it compiles" for anything under `iosApp/` or `shared/src/iosMain`.
+
 ## Comments explain the current code, not its history
 
 A comment describes what the code does and why it's built that way now — never what an earlier version did, why that earlier version was wrong, or what bug used to exist there. No "previously this was X", "this used to cause Y", "fixed an off-by-one", "confirmed against real hardware" framing. If the current behavior needs justification, state the reason as a fact about the system (the protocol, the hardware, a constraint), not as a story about what changed. Git history is where "what changed and why" belongs, not comments.

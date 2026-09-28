@@ -131,6 +131,11 @@ class SnakeViewModel(private val bleClient: MoonBoardBleClient) {
         return body + head + PlacedHold(food, HoldType.END)
     }
 
+    /** Exposes state to Swift via a plain callback - Kotlin/Native bridges this to a closure param directly. */
+    fun observeState(onChange: (SnakeUiState) -> Unit) {
+        scope.launch { uiState.collect(onChange) }
+    }
+
     fun onCleared() {
         scope.cancel()
     }

@@ -45,7 +45,8 @@ Since real-hardware testing happens away from a PC, `MoonBoardBleClient` and `Bo
   1. Create a new Xcode iOS App project named `iosApp` (SwiftUI), and replace its generated Swift files with the ones here.
   2. Add a "Run Script" build phase before "Compile Sources" that runs `shared`'s Kotlin/Native framework export, e.g. `cd "$SRCROOT/.." && ./gradlew :shared:embedAndSignAppleFrameworkForXcode`, with the usual `SDK_NAME`/`CONFIGURATION`/`ARCHS` env vars Xcode sets.
   3. Add the produced `shared.framework` to the app's framework search path.
-  - The CoreBluetooth delegate code in `MoonBoardBleClient.ios.kt` is written against the documented Kotlin/Native CoreBluetooth API but never compiled — expect small interop naming fixes on first build.
+  4. Drag `iosApp/Fonts/*.ttf` into the Xcode target (checking "Copy items if needed") and list each file under `Info.plist`'s `UIAppFonts` (Fonts provided by application) array — otherwise `Font.custom`/`UIFontDescriptor` in `Font+MoonBoard.swift` silently fall back to the system font.
+  - The CoreBluetooth delegate code in `MoonBoardBleClient.ios.kt` is written against the documented Kotlin/Native CoreBluetooth API but never compiled — expect small interop naming fixes on first build. The same is true of every other file under `iosApp/`.
 
 ## Self-check
 

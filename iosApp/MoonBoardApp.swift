@@ -10,7 +10,7 @@ struct MoonBoardApp: App {
         AppLogger.shared.doInit(context: PlatformContext())
         let client = MoonBoardBleClient(context: PlatformContext())
         _board = StateObject(wrappedValue: BoardObservable(viewModel: BoardViewModel(bleClient: client)))
-        _snake = StateObject(wrappedValue: SnakeObservable(viewModel: SnakeViewModel(bleClient: client)))
+        _snake = StateObject(wrappedValue: SnakeObservable(viewModel: SnakeViewModel(bleClient: client, highScoreStore: HighScoreStore(context: PlatformContext()))))
     }
 
     var body: some Scene {

@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.almog.moonboard.android.ui.theme.MoonBoardTheme
 import com.almog.moonboard.ble.MoonBoardBleClient
 import com.almog.moonboard.ble.PlatformContext
+import com.almog.moonboard.snake.HighScoreStore
 import com.almog.moonboard.viewmodel.BoardViewModel
 import com.almog.moonboard.viewmodel.SnakeViewModel
 
@@ -16,7 +17,7 @@ class MainActivity : ComponentActivity() {
 
     private val bleClient by lazy { MoonBoardBleClient(PlatformContext(applicationContext)) }
     private val boardViewModel by lazy { BoardViewModel(bleClient) }
-    private val snakeViewModel by lazy { SnakeViewModel(bleClient) }
+    private val snakeViewModel by lazy { SnakeViewModel(bleClient, HighScoreStore(PlatformContext(applicationContext))) }
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }

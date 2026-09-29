@@ -8,6 +8,7 @@ import com.almog.moonboard.model.GridPosition
 import com.almog.moonboard.model.HoldType
 import com.almog.moonboard.model.PlacedHold
 import com.almog.moonboard.snake.Direction
+import com.almog.moonboard.snake.HighScoreStore
 import com.almog.moonboard.snake.INITIAL_DIRECTION
 import com.almog.moonboard.snake.INITIAL_SNAKE
 import com.almog.moonboard.snake.SnakeEngine
@@ -41,9 +42,12 @@ data class SnakeUiState(
     val highScore: Int = 0,
 )
 
-class SnakeViewModel(private val bleClient: MoonBoardBleClient) {
+class SnakeViewModel(
+    private val bleClient: MoonBoardBleClient,
+    private val highScoreStore: HighScoreStore,
+) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val _uiState = MutableStateFlow(SnakeUiState())
+    private val _uiState = MutableStateFlow(SnakeUiState(highScore = highScoreStore.load()))
     val uiState: StateFlow<SnakeUiState> = _uiState.asStateFlow()
 
     private var gameJob: Job? = null
@@ -100,8 +104,10 @@ class SnakeViewModel(private val bleClient: MoonBoardBleClient) {
                 is StepResult.Moved -> {
                     val newFood = if (result.ateFood) SnakeEngine.randomFood(result.snake) else food
                     val newScore = state.score + if (result.ateFood) 1 else 0
+                    val newHighScore = maxOf(state.highScore, newScore)
+                    if (newHighScore > state.highScore) highScoreStore.save(newHighScore)
                     _uiState.update {
-                        it.copy(snake = result.snake, food = newFood, score = newScore, highScore = maxOf(it.highScore, newScore))
+                        it.copy(snake = result.snake, food = newFood, score = newScore, highScore = newHighScore)
                     }
                     bleClient.sendProblem(toHolds(result.snake, newFood))
                 }

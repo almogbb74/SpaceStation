@@ -149,7 +149,7 @@ private struct DirectionPad: View {
     var body: some View {
         VStack(spacing: 16) {
             DirectionButton(icon: "chevron.up", enabled: enabled) { onDirection(.up) }
-            HStack(spacing: 96) {
+            HStack(spacing: 56) {
                 DirectionButton(icon: "chevron.left", enabled: enabled) { onDirection(.left) }
                 DirectionButton(icon: "chevron.right", enabled: enabled) { onDirection(.right) }
             }
@@ -166,8 +166,8 @@ private struct DirectionButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 40, weight: .regular))
-                .frame(width: 100, height: 100)
+                .font(.system(size: 64, weight: .regular))
+                .frame(width: 130, height: 130)
                 .background(Color.moonBoardSurfaceVariant)
                 .clipShape(Circle())
         }

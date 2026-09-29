@@ -208,8 +208,8 @@ private fun SnakeGameContent(
     }
 }
 
-private val DirectionButtonSize = 100.dp
-private val DirectionIconSize = 56.dp
+private val DirectionButtonSize = 130.dp
+private val DirectionIconSize = 72.dp
 
 @Composable
 private fun DirectionPad(enabled: Boolean, onDirection: (Direction) -> Unit) {
@@ -217,7 +217,7 @@ private fun DirectionPad(enabled: Boolean, onDirection: (Direction) -> Unit) {
         DirectionButton(Icons.Default.KeyboardArrowUp, stringResource(R.string.snake_direction_up), enabled) {
             onDirection(Direction.UP)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(96.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(56.dp)) {
             DirectionButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, stringResource(R.string.snake_direction_left), enabled) {
                 onDirection(Direction.LEFT)
             }
